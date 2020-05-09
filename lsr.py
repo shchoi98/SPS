@@ -1,4 +1,7 @@
+import os
 import sys
+
+import math
 import torch as t
 import pandas as pd
 import numpy as np
@@ -36,31 +39,29 @@ def view_data_segments(xs, ys):
 
 # pass x vector and y vector to calculate fit weight
 def line(x):
-    x_i = t.cat(x, t.ones(x.shape[0]), 1)
+    x_i = t.cat(x, x, t.ones(x.shape[0], 1), 1)
     return x_i
 
 
 def poly(x, order):
-    x_i = x
     if order == 2:
-        x_i = t.cat([x ** 2, x, t.ones(x.shape[0], 1)], 1)
-
+        t.cat([x ** 2, x, t.ones(x.shape[0], 1)], 1)
     elif order == 3:
-        x_i = t.cat([x**3, x**2, x, t.ones(x.shape[0], 1)], 1)
-    return x_i
+        t.cat([x**3, x**2, x, t.ones(x.shape[0], 1)], 1)
 
-# def expo(x):
-#     return math.exp(x)
+
+def expo(x):
+    return expo(x)
 
 
 def error(x, y, w):
-    errors = y-x.dot(w)
-    return errors.T.dot(errors)
+    error_squared= (y - x@w)**2
+    return
 
 
 # calculate the fitting weight
 def fit_wh(x, y):
-    return np.linalg.inv(x.T.dot(x)).dot(x.T).dot(y)
+    return t.inverse(x.T @ x) @ x.T @ y
 
 
 def display(filename):
@@ -69,40 +70,19 @@ def display(filename):
 
 # you need to use pytorch to plot or calculate the least square and plot the fit line
 
-
+# input 
 def main():
     file_name = sys.argv[1]
-    x, y = load_points_from_file("train_data/"+file_name)
+    x, y = load_points_from_file(file_name)
 
-    x.shape = (x.shape[0], 1)
-    y.shape = (y.shape[0], 1)
+    # for each 20 points loop through
 
-    a = np.ones(x.shape)
-    x_e = np.column_stack((a, x))
-    w = fit_wh(x_e, y)
-
-    x_min = x.min()
-    x_max = x.max()
-    y_x_min = w[0] + w[1] * x_min
-    y_x_max = w[0] + w[1] * x_max
-
-    if len(sys.argv) == 3 and sys.argv[2] == "--plot":
-        fig, ax = plt.subplots()
-        ax.scatter(x, y, s=100)
-        ax.plot([x_min, x_max], [y_x_min, y_x_max], 'r-', lw=2)
-        plt.show()
-
-    e = error(x_e, y, w)
-    print(e[0][0])
-
-    # plot
-
-    # print(file_name)
-    # print(x,y)
-
-
-    #     view_data_segments(x, y)
-    # #         and plot regression line as well
+    # Xe = t.cat([x, t.ones(x.shape[0], 1)], 1)
+    Wh = fit_wh(x, y)
+    # print the summing the error for every line segment
+    if len(sys.argv) == 3:
+        view_data_segments(x, y)
+#         and plot regression line as well
 
 
 if __name__ == '__main__':
