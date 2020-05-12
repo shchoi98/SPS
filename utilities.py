@@ -137,8 +137,9 @@ def main():
     ys = np.split(y, num_segments, axis=0)
     total_error = 0
 
-    print(ww)
+    ww = []
     for i in range(num_segments):
+
         xs_l = line(xs[i])
         xs_q = quad(xs[i])
         xs_c = cubic(xs[i])
@@ -156,18 +157,40 @@ def main():
 
         if e == el:
             print("linear")
-            plot_l(xs[i], ys[i], wl)
+            print(wl)
+            ww = np.append(ww, 'wl')
         elif e == eq:
             print("quadratic")
-            plot_q(xs[i], ys[i], wq)
+            print(wq)
+            ww = np.append(ww, 'wq')
         elif e == ec:
             print("cubic")
-            plot_c(xs[i], ys[i], wc)
+            print(wc)
+            ww = np.append(ww, 'wc')
 
-        # print(w)
-        if len(sys.argv) == 3 and sys.argv[2] == "--plot":
-            plt.plot()
     print(total_error)
+
+    if len(sys.argv) == 3 and sys.argv[2] == "--plot":
+        fig, ax = plt.subplots()
+        ax.scatter(x, y, s=100)
+
+        for i in range(num_segments):
+
+            xr = t.linspace(xs[i].min(), xs[i].max(), 100)
+
+            if ww[i] == 'wl':
+                xs_l = line(xs[i])
+                wl = fit_wh(xs_l, ys[i])
+                ax.plot(xr, line(xr).dot(wl), 'r')
+            elif ww[i] == 'wq':
+                xs_q = quad(xs[i])
+                wq = fit_wh(xs_q, ys[i])
+                ax.plot(xr, quad(xr).dot(wq), 'r')
+            elif ww[i] == 'wc':
+                xs_c = cubic(xs[i])
+                wc = fit_wh(xs_c, ys[i])
+                ax.plot(xr, cubic(xr).dot(wc), 'r')
+        plt.show()
 
 
 if __name__ == '__main__':
