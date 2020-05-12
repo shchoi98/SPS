@@ -2,6 +2,7 @@ import sys
 import torch as t
 import pandas as pd
 import numpy as np
+import tensorflow as tf
 from matplotlib import pyplot as plt
 
 
@@ -36,25 +37,35 @@ def view_data_segments(xs, ys):
 
 # pass x vector and y vector to calculate fit weight
 def line(x):
-    x_i = t.cat(x, t.ones(x.shape[0]), 1)
-    return x_i
+    a = np.ones(x.shape)
+    x_e = np.column_stack((a, x))
+    # x_ones = t.ones(x.shape[0], 1)
+    return x_e
 
 
-def poly(x, order):
-    x_i = x
-    if order == 2:
-        x_i = t.cat([x ** 2, x, t.ones(x.shape[0], 1)], 1)
+def quad(x):
+    a = np.ones(x.shape)
+    x_square = x ** 2
+    x_e = np.column_stack((a, x, x_square))
+    # x_2 = t.cat([x ** 2, x, t.ones(x.shape[0], 1)], 1)
+    return x_e
 
-    elif order == 3:
-        x_i = t.cat([x**3, x**2, x, t.ones(x.shape[0], 1)], 1)
-    return x_i
+
+def cubic(x):
+    a = np.ones(x.shape)
+    x_square = x ** 2
+    x_cube = x ** 3
+    x_e = np.column_stack((a, x, x_square, x_cube))
+    return x_e
+
 
 # def expo(x):
-#     return math.exp(x)
+    # return np.exp(x)
 
 
 def error(x, y, w):
-    errors = y-x.dot(w)
+
+    errors = y - x.dot(w)
     return errors.T.dot(errors)
 
 
@@ -70,39 +81,93 @@ def display(filename):
 # you need to use pytorch to plot or calculate the least square and plot the fit line
 
 
-def main():
-    file_name = sys.argv[1]
-    x, y = load_points_from_file("train_data/"+file_name)
+def plot_l(x, y, w):
+    fig, ax = plt.subplots()
 
-    x.shape = (x.shape[0], 1)
-    y.shape = (y.shape[0], 1)
-
-    a = np.ones(x.shape)
-    x_e = np.column_stack((a, x))
-    w = fit_wh(x_e, y)
+    ax.scatter(x, y, s=100)
 
     x_min = x.min()
     x_max = x.max()
     y_x_min = w[0] + w[1] * x_min
     y_x_max = w[0] + w[1] * x_max
-
-    if len(sys.argv) == 3 and sys.argv[2] == "--plot":
-        fig, ax = plt.subplots()
-        ax.scatter(x, y, s=100)
-        ax.plot([x_min, x_max], [y_x_min, y_x_max], 'r-', lw=2)
-        plt.show()
-
-    e = error(x_e, y, w)
-    print(e[0][0])
-
-    # plot
-
-    # print(file_name)
-    # print(x,y)
+    ax.plot([x_min, x_max], [y_x_min, y_x_max], 'r-', lw=2)
+    plt.show()
 
 
-    #     view_data_segments(x, y)
-    # #         and plot regression line as well
+def plot_q(x, y, w):
+    fig, ax = plt.subplots()
+
+    ax.scatter(x, y, s=100)
+
+    x_min = x.min()
+    x_max = x.max()
+    xs = t.linspace(x_min, x_max, 100)
+    ax.plot(xs, quad(xs).dot(w), 'r')
+    plt.show()
+
+
+def plot_c(x, y, w):
+    fig, ax = plt.subplots()
+    ax.scatter(x, y, s=100)
+
+    x_min = x.min()
+    x_max = x.max()
+    xs = t.linspace(x_min, x_max, 100)
+    ax.plot(xs, cubic(xs).dot(w), 'r')
+    plt.show()
+
+
+def main():
+    file_name = sys.argv[1]
+    x, y = load_points_from_file("train_data/"+file_name)
+
+    # xs_e = line(x)
+    # xt = t.from_numpy(xs_e)
+    # yt = tf.convert_to_tensor(y)
+
+    # 이거는 데이터 자를는 기능
+    len_data = len(x)
+    num_segments = len_data//20
+
+    # x_e = line(xt)
+    # w = fit_wh(x_e, yt)
+    # plot(xt, yt, w)
+
+    xs = np.split(x, num_segments, axis=0)
+    ys = np.split(y, num_segments, axis=0)
+    total_error = 0
+
+    print(ww)
+    for i in range(num_segments):
+        xs_l = line(xs[i])
+        xs_q = quad(xs[i])
+        xs_c = cubic(xs[i])
+
+        wl = fit_wh(xs_l, ys[i])
+        wq = fit_wh(xs_q, ys[i])
+        wc = fit_wh(xs_c, ys[i])
+
+        el = error(xs_l, ys[i], wl)
+        eq = error(xs_q, ys[i], wq)
+        ec = error(xs_c, ys[i], wc)
+
+        e = min(el, eq, ec)
+        total_error += e
+
+        if e == el:
+            print("linear")
+            plot_l(xs[i], ys[i], wl)
+        elif e == eq:
+            print("quadratic")
+            plot_q(xs[i], ys[i], wq)
+        elif e == ec:
+            print("cubic")
+            plot_c(xs[i], ys[i], wc)
+
+        # print(w)
+        if len(sys.argv) == 3 and sys.argv[2] == "--plot":
+            plt.plot()
+    print(total_error)
 
 
 if __name__ == '__main__':
