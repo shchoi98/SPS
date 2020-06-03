@@ -88,7 +88,43 @@
 # #     y_x_max = w[0] + w[1] * x_max
 # #     ax.plot([x_min, x_max], [y_x_min, y_x_max], 'r-', lw=2)
 # #     plt.show()
+# ## you need to use pytorch to plot or calculate the least square and plot the fit line
+#
 # #
+# # def plot_l(x, y, w):
+# #     fig, ax = plt.subplots()
+# #
+# #     ax.scatter(x, y, s=100)
+# #
+# #     x_min = x.min()
+# #     x_max = x.max()
+# #     y_x_min = w[0] + w[1] * x_min
+# #     y_x_max = w[0] + w[1] * x_max
+# #     ax.plot([x_min, x_max], [y_x_min, y_x_max], 'r-', lw=2)
+# #     plt.show()
+# #
+# #
+# # def plot_q(x, y, w):
+# #     fig, ax = plt.subplots()
+# #
+# #     ax.scatter(x, y, s=100)
+# #
+# #     x_min = x.min()
+# #     x_max = x.max()
+# #     xs = t.linspace(x_min, x_max, 100)
+# #     ax.plot(xs, quad(xs).dot(w), 'r')
+# #     plt.show()
+# #
+# #
+# # def plot_c(x, y, w):
+# #     fig, ax = plt.subplots()
+# #     ax.scatter(x, y, s=100)
+# #
+# #     x_min = x.min()
+# #     x_max = x.max()
+# #     xs = t.linspace(x_min, x_max, 100)
+# #     ax.plot(xs, cubic(xs).dot(w), 'r')
+# #     plt.show()
 # #
 # # def main():
 # #     file_name = sys.argv[1]
@@ -122,3 +158,48 @@
 # #
 # # if __name__ == '__main__':
 # #     main()
+import sys
+import torch as t
+import pandas as pd
+import numpy as np
+
+from matplotlib import pyplot as plt
+
+
+def y_e(x,w):
+    w_shape = np.shape(w)
+    if w_shape == [1,2]:
+        return line(x).dot(w)
+    elif w_shape == [1,3]:
+        return quad(x).dot(w)
+    elif w_shape == [1, 4]:
+        return cubic(x).dot(w)
+    elif w_shape == [1, 5]:
+        return quartic(x).dot(w)
+
+
+
+def main():
+    str = "adv_1.csv"
+    print(str[:-4])
+
+
+# if i > 0:
+#     xs[i] = np.append(xs[i], xs[i-1].max())
+#     xs[i] = xs[i][: -1]
+#     ys[i] = np.append(ys[i], ys[i-1].max())
+
+
+# if e == el:
+#     ww = np.append(ww, 'wl')
+# elif e == eq:
+#     ww = np.append(ww, 'wq')
+# elif e == ec:
+#     ww = np.append(ww, 'wc')
+# elif e == e4:
+#     ww = np.append(ww, 'w4')
+# print(y_e(xs[i].min(), ww[i]))
+
+if __name__ == '__main__':
+    main()
+
