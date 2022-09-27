@@ -1,0 +1,88 @@
+import sys
+import torch as t
+import pandas as pd
+import numpy as np
+
+from matplotlib import pyplot as plt
+
+
+def load_points_from_file(filename):
+    """Loads 2d points from a csv called filename
+    Args:
+        filename : Path to .csv file
+    Returns:
+        (xs, ys) where xs and ys are a numpy array of the co-ordinates.
+    """
+    points = pd.read_csv(filename, header=None)
+    return points[0].values, points[1].values
+
+
+def view_data_segments(xs, ys):
+    """Visualises the input file with each segment plotted in a different colour.
+    Args:
+        xs : List/array-like of x co-ordinates.
+        ys : List/array-like of y co-ordinates.
+    Returns:
+        None
+    """
+    assert len(xs) == len(ys)
+    assert len(xs) % 20 == 0
+    len_data = len(xs)
+    num_segments = len_data // 20
+    colour = np.concatenate([[i] * 20 for i in range(num_segments)])
+    plt.set_cmap('Dark2')
+    plt.scatter(xs, ys, c=colour)
+    plt.show()
+
+
+# pass x vector and y vector to calculate fit weight
+def line(x):
+    a = np.ones(x.shape)
+    x_e = np.column_stack((a, x))
+    return x_e
+
+
+def quad(x):
+    a = np.ones(x.shape)
+    x_square = x ** 2
+    x_e = np.column_stack((a, x, x_square))
+    return x_e
+
+
+def cubic(x):
+    a = np.ones(x.shape)
+    x_square = x ** 2
+    x_cube = x ** 3
+    x_e = np.column_stack((a, x, x_square, x_cube))
+    return x_e
+
+
+def quartic(x):
+    a = np.ones(x.shape)
+    x_square = x ** 2
+    x_cube = x ** 3
+    x_4 = x ** 4
+    x_e = np.column_stack((a, x, x_square, x_cube, x_4))
+    return x_e
+
+
+def error(x, y, w):
+    errors = y - x.dot(w)
+    return errors.T.dot(errors)
+
+
+# calculate the fitting weight
+def fit_wh(x, y):
+    return np.linalg.inv(x.T.dot(x)).dot(x.T).dot(y)
+
+
+def main():
+ 
+    x = np.array([0.0, 1.0, 2.0, 3.0])
+    y = np.array([-0.4, 2.8, 3.2, 6.6])
+    print(fit_wh(line(x),y))
+    print(error(line(x), y, np.array([0.11, 2.12])))
+   
+
+if __name__ == '__main__':
+    main()
